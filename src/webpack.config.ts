@@ -56,7 +56,7 @@ export const WEBPACK_CONFIG: webpack.Configuration = {
   plugins: [
     new HtmlWebpackPlugin({
       template: path.join(__dirname, "./web/index.html"),
-      favicon: "./src/favicon.ico",
+      favicon: "./src/favicon/favicon.ico",
     }),
     // new webpack.DefinePlugin(buildConfig.environmentVariables),
     // new BundleAnalyzerPlugin(),
