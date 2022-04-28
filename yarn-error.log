@@ -1,5 +1,5 @@
 Arguments: 
-  /Users/sammcgrail/.nvm/versions/node/v17.4.0/bin/node /Users/sammcgrail/.yarn/bin/yarn.js init
+  /Users/sammcgrail/.nvm/versions/node/v17.4.0/bin/node /Users/sammcgrail/.yarn/bin/yarn.js
 
 PATH: 
   /Users/sammcgrail/.yarn/bin:/Users/sammcgrail/.config/yarn/global/node_modules/.bin:/Users/sammcgrail/.nvm/versions/node/v17.4.0/bin:/opt/homebrew/bin:/opt/homebrew/sbin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:/usr/local/share/dotnet:~/.dotnet/tools:/Library/Frameworks/Mono.framework/Versions/Current/Commands:/Applications/Wireshark.app/Contents/MacOS
@@ -14,7 +14,7 @@ Platform:
   darwin arm64
 
 Trace: 
-  SyntaxError: /Users/sammcgrail/code/boilerbuild/package.json: Unexpected end of JSON input
+  SyntaxError: /Users/sammcgrail/code/boilerbuild/package.json: Unexpected token , in JSON at position 1222
       at JSON.parse (<anonymous>)
       at /Users/sammcgrail/.yarn/lib/cli.js:1625:59
       at Generator.next (<anonymous>)
@@ -22,7 +22,49 @@ Trace:
       at /Users/sammcgrail/.yarn/lib/cli.js:321:13
 
 npm manifest: 
-  
+  {
+    "name": "boilerbuild",
+    "version": "1.0.0",
+    "main": "server.js",
+    "repository": "https://github.com/sammcgrail/boilerbuild.git",
+    "author": "Sam McGrail <sammcgrail@gmail.com>",
+    "license": "MIT",
+    "dependencies": {
+      "@babel/core": "~7.17.5",
+      "@babel/preset-env": "~7.16.11",
+      "@babel/preset-typescript": "^7.16.7",
+      "@reduxjs/toolkit": "~1.7.2",
+      "@types/jest": "^27.0.0",
+      "@types/node": "~13.13.2",
+      "@types/react-redux": "~7.1.22",
+      "eslint-plugin-prettier": "~4.0.0",
+      "express": "~4.16.3",
+      "file-loader": "~6.2.0",
+      "html-webpack-plugin": "~5.5.0",
+      "jest": "~27.5.1",
+      "prettier": "~2.5.1",
+      "react": "^17.0.2",
+      "react-dom": "^17.0.2",
+      "react-fps": "~1.0.6",
+      "react-router-dom": "~6.2.1",
+      "ts-jest": "~27.1.3",
+      "ts-loader": "~9.2.6",
+      "ts-node": "~8.9.0",
+      "typescript": "~4.6.2",
+      "webpack": "~5.66.0",
+      "webpack-dev-server": "~4.7.3"
+    },
+    "scripts": {
+      "server": "ts-node src/server.ts",
+      "lint": "eslint \"**/*.{js, ts, tsx}\""
+    },
+    "devDependencies": {
+      "@typescript-eslint/eslint-plugin": "^5.10.0",
+      "@typescript-eslint/parser": "^5.10.0",
+      "eslint": "^8.7.0",
+      "eslint-plugin-react": "^7.28.0"
+    }
+  },
 
 yarn manifest: 
   No manifest

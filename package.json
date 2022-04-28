@@ -4,5 +4,8 @@
   "main": "server.js",
   "repository": "https://github.com/sammcgrail/boilerbuild.git",
   "author": "Sam McGrail <sammcgrail@gmail.com>",
-  "license": "MIT"
+  "license": "MIT",
+  "dependencies": {
+    "firebase-tools": "~10.7.1"
+  }
 }
