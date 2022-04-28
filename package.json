@@ -1,0 +1,8 @@
+{
+  "name": "boilerbuild",
+  "version": "1.0.0",
+  "main": "server.js",
+  "repository": "https://github.com/sammcgrail/boilerbuild.git",
+  "author": "Sam McGrail <sammcgrail@gmail.com>",
+  "license": "MIT"
+}

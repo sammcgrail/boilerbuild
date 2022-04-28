@@ -1,0 +1,31 @@
+Arguments: 
+  /Users/sammcgrail/.nvm/versions/node/v17.4.0/bin/node /Users/sammcgrail/.yarn/bin/yarn.js init
+
+PATH: 
+  /Users/sammcgrail/.yarn/bin:/Users/sammcgrail/.config/yarn/global/node_modules/.bin:/Users/sammcgrail/.nvm/versions/node/v17.4.0/bin:/opt/homebrew/bin:/opt/homebrew/sbin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:/usr/local/share/dotnet:~/.dotnet/tools:/Library/Frameworks/Mono.framework/Versions/Current/Commands:/Applications/Wireshark.app/Contents/MacOS
+
+Yarn version: 
+  1.22.18
+
+Node version: 
+  17.4.0
+
+Platform: 
+  darwin arm64
+
+Trace: 
+  SyntaxError: /Users/sammcgrail/code/boilerbuild/package.json: Unexpected end of JSON input
+      at JSON.parse (<anonymous>)
+      at /Users/sammcgrail/.yarn/lib/cli.js:1625:59
+      at Generator.next (<anonymous>)
+      at step (/Users/sammcgrail/.yarn/lib/cli.js:310:30)
+      at /Users/sammcgrail/.yarn/lib/cli.js:321:13
+
+npm manifest: 
+  
+
+yarn manifest: 
+  No manifest
+
+Lockfile: 
+  No lockfile
