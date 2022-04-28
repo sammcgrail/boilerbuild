@@ -1,0 +1,19 @@
+{
+  "compilerOptions": {
+    "lib": ["es6", "dom", "es2015"],
+    "module": "commonjs",
+    "target": "es2020",
+    "moduleResolution": "node",
+    "declaration": false,
+    "jsx": "react",
+    "experimentalDecorators": true,
+    "esModuleInterop": true,
+    "allowJs": true,
+    "downlevelIteration": true
+  },
+  "include": [
+    "src/"
+  ],
+  "exclude": ["node_modules"]
+}
+

@@ -1,0 +1,14 @@
+{
+	"compilerOptions": {
+		"sourceMap": true,
+    "jsx": "react",
+    "allowSyntheticDefaultImports": true
+	},
+	"exclude": [
+		"node_modules"
+  ],
+  "include": [
+    "./web/**/*.ts",
+    "./web/**/*.tsx"
+  ]
+}
