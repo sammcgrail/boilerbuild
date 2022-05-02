@@ -5,9 +5,12 @@ import * as path from "path";
 import express from "express";
 import * as http from "http";
 import { WEBPACK_DEV_SERVER_PORT } from "./shared/constants";
+import rootRouter from "./routes/rootRouter.ts";
 
 const app = express();
 const server = http.createServer(app);
+
+app.use("/", rootRouter);
 
 // let lastFreshTimeout: NodeJS.Timeout | number;
 

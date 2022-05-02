@@ -29,7 +29,7 @@
     "webpack-dev-server": "~4.7.3"
   },
   "scripts": {
-    "server": "ts-node src/server.ts",
+    "server": "ts-node ./src/server.ts",
     "lint": "eslint \"**/*.{js, ts, tsx}\""
   },
   "devDependencies": {

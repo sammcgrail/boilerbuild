@@ -6,10 +6,8 @@ export const WEBPACK_CONFIG: webpack.Configuration = {
   mode: "development",
   devtool: "source-map",
   devServer: {
-    // client: {
-    //   logging: "none",  //figure this out
-    // },
     host: "0.0.0.0",
+    historyApiFallback: true,
   },
   module: {
     rules: [
