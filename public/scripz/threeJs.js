@@ -1,5 +1,7 @@
 const scene = new THREE.Scene();
 const loader = new THREE.TextureLoader();
+const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+const renderer = new THREE.WebGLRenderer();
 
 const makeACube = (material) => {
     const geometry = new THREE.BoxGeometry();
@@ -9,8 +11,6 @@ const makeACube = (material) => {
     return cube;
 }
 
-const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-const renderer = new THREE.WebGLRenderer();
 renderer.setSize(window.innerWidth, window.innerHeight);
 document.body.appendChild(renderer.domElement);
 
