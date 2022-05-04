@@ -3,7 +3,7 @@ const loader = new THREE.TextureLoader();
 
 const makeACube = (material) => {
     const geometry = new THREE.BoxGeometry();
-    cube = new THREE.Mesh(geometry, material);
+    const cube = new THREE.Mesh(geometry, material);
     scene.add(cube);
     return cube;
 }
@@ -16,11 +16,19 @@ document.body.appendChild(renderer.domElement);
 const material = new THREE.MeshLambertMaterial({ color: 0xffffff });
 const light = new THREE.HemisphereLight(0xf6e86d, 0x404040, 0.5);
 
-
-const animate = (cube) => {
-    requestAnimationFrame(() => animate(cube));
-    cube.rotation.x += 0.01;
-    cube.rotation.y += 0.01;
+let frames = 0;
+const animate = (cubes) => {
+    requestAnimationFrame(() => animate(cubes));
+    frames++;
+    cubes.forEach(cube => {
+        cube.rotation.x += 0.01;
+        cube.rotation.y += 0.01;
+        if(frames % 30 === 0){
+            cube.position.x = Math.random() * 10;
+            cube.position.y = Math.random() * 10;
+        }
+    })
+    
     renderer.render(scene, camera);
 }
 
@@ -30,7 +38,15 @@ loader.load(
         const material = new THREE.MeshBasicMaterial({
             map: texture
         })
-        animate(makeACube(material));
+        const cubes = [];
+        for (let i = 0; i < 100; i++) {
+            const cube = makeACube(material);
+            cube.position.x = i * 0.05;
+            cube.position.y = i * 0.05;
+            cubes.push(cube);
+        }
+        console.log(cubes, scene);
+        animate(cubes);
     },
     undefined,
     function (err) {
