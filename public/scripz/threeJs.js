@@ -195,7 +195,7 @@ const animate = (shapes) => {
 
     expansionX += magicX;
     expansionY += magicY;
-    pointLight.intensity = expansionX / 20;
+    pointLight.intensity = expansionX / 2000;
     // const sizeVector = new THREE.Vector3(expansionX / 255, expansionY / 255, 10);
     const sizeVector = { x: expansionX/255, y: expansionY/255, z: 1 };
     console.log(sizeVector);
@@ -215,8 +215,8 @@ const animate = (shapes) => {
         // shape.position.x = line[(frames + i) % line.length].x + line[i].x;
         // shape.position.y = line[(frames + i) % line.length].y + line[i].y;
         // shape.position.z = -i * 0.5 + line[i].x * line[i].y; neat z-view trick
-        shape.position.x = pos.x + Math.sin(frames/200 + i) * (expansionX / 100);
-        shape.position.y = pos.y + Math.cos(frames/200 + i) * (expansionY / 100);
+        shape.position.x = pos.x + Math.sin(frames/20 + i) * (expansionX / 100);
+        shape.position.y = pos.y + Math.cos(frames/20 + i) * (expansionY / 100);
         // shape.position.z = -i + 6; don't do this
     })
 
