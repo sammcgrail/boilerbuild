@@ -9,6 +9,7 @@ export const WEBPACK_CONFIG: webpack.Configuration = {
     host: "0.0.0.0",
     historyApiFallback: true,
   },
+  target: "node",
   module: {
     rules: [
       {
@@ -44,9 +45,7 @@ export const WEBPACK_CONFIG: webpack.Configuration = {
     modules: ["node_modules"],
     extensions: [".ts", ".tsx", ".js", ".jsx"],
   },
-  entry: {
-    demo: "./src/web/index.tsx",
-  },
+  entry: ["./server.ts", "webpack-hot-middleware/client"],
   output: {
     path: path.join(__dirname, "../dist"),
     filename: "bundle.js",
@@ -56,6 +55,9 @@ export const WEBPACK_CONFIG: webpack.Configuration = {
       template: path.join(__dirname, "./web/index.html"),
       favicon: "./src/favicon/favicon.ico",
     }),
+    new webpack.HotModuleReplacementPlugin(),
+    // Use NoErrorsPlugin for webpack 1.x
+    new webpack.NoEmitOnErrorsPlugin()
     // new webpack.DefinePlugin(buildConfig.environmentVariables),
     // new BundleAnalyzerPlugin(),
   ],

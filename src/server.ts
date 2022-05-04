@@ -5,10 +5,16 @@ import * as path from "path";
 import express from "express";
 import * as http from "http";
 import { WEBPACK_DEV_SERVER_PORT } from "./shared/constants";
-import rootRouter from "./routes/rootRouter.ts";
+import rootRouter from "./routes/rootRouter";
+import middleware from "webpack-dev-middleware";
 
 const app = express();
-const server = http.createServer(app);
+const compiler = webpack(WEBPACK_CONFIG)
+
+app.use(require("webpack-dev-middleware")(compiler, {
+  publicPath: WEBPACK_CONFIG.output.publicPath
+}));
+app.use(require("webpack-hot-middleware")(compiler));
 
 app.use("/", rootRouter);
 

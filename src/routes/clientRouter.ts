@@ -5,6 +5,7 @@ const clientRouter = express.Router();
 const clientRoutes = ["/", "/pizza"];
 
 clientRouter.get(clientRoutes, (req, res) => {
+  console.log("client Route");
   res.sendFile(clientIndexPath())
 })
 
