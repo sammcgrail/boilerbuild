@@ -1,3 +1,93 @@
+class AudioVisualizer {
+    constructor(audioContext, processFrame, processError) {
+        this.audioContext = audioContext;
+        this.processFrame = processFrame;
+        this.connectStream = this.connectStream.bind(this);
+        navigator.mediaDevices.getUserMedia({ audio: true, video: false })
+            .then(this.connectStream)
+            .catch((error) => {
+                if (processError) {
+                    processError(error);
+                }
+            });
+    }
+
+    connectStream(stream) {
+        this.analyser = this.audioContext.createAnalyser();
+        const source = this.audioContext.createMediaStreamSource(stream);
+        source.connect(this.analyser);
+        this.analyser.smoothingTimeConstant = 0.5;
+        this.analyser.fftSize = 32;
+
+        this.initRenderLoop(this.analyser);
+    }
+
+    initRenderLoop() {
+        const frequencyData = new Uint8Array(this.analyser.frequencyBinCount);
+        const processFrame = this.processFrame || (() => { });
+
+        const renderFrame = () => {
+            this.analyser.getByteFrequencyData(frequencyData);
+            processFrame(frequencyData);
+
+            requestAnimationFrame(renderFrame);
+        };
+        requestAnimationFrame(renderFrame);
+    }
+}
+
+const visualMainElement = document.querySelector('main');
+const visualValueCount = 16;
+let visualElements;
+const createDOMElements = () => {
+    let i;
+    for (i = 0; i < visualValueCount; ++i) {
+        const elm = document.createElement('div');
+        visualMainElement.appendChild(elm);
+    }
+
+    visualElements = document.querySelectorAll('main div');
+};
+createDOMElements();
+
+let soundValues = [];
+for (let i =0; i < 16; i++) {
+    soundValues.push(0);
+}
+
+const init = () => {
+    // Creating initial DOM elements
+    const audioContext = new AudioContext();
+    const initDOM = () => {
+        visualMainElement.innerHTML = '';
+        createDOMElements();
+    };
+    initDOM();
+
+    // Swapping values around for a better visual effect
+    const dataMap = { 0: 15, 1: 10, 2: 8, 3: 9, 4: 6, 5: 5, 6: 2, 7: 1, 8: 0, 9: 4, 10: 3, 11: 7, 12: 11, 13: 12, 14: 13, 15: 14 };
+    const processFrame = (data) => {
+        // console.log(data);
+        const values = Object.values(data);
+        soundValues = values;
+        // let i;
+        // for (i = 0; i < visualValueCount; ++i) {
+        //     const value = values[dataMap[i]] / 255;
+        //     const elmStyles = visualElements[i].style;
+        //     elmStyles.transform = `scaleY( ${value} )`;
+        //     elmStyles.opacity = Math.max(.25, value);
+        // }
+    };
+
+    const processError = () => {
+        visualMainElement.classList.add('error');
+        visualMainElement.innerText = 'Please allow access to your microphone in order to see this demo.\nNothing bad is going to happen... hopefully :P';
+    }
+
+    const a = new AudioVisualizer(audioContext, processFrame, processError);
+};
+// init();
+
 let mouseX;
 let mouseY;
 let vec = new THREE.Vector3();
@@ -15,19 +105,21 @@ const material = new THREE.MeshLambertMaterial({ color: 0xffffff });
 const light = new THREE.HemisphereLight(0xf6e86d, 0x404040, 0.5);
 scene.add(light);
 
-let expansion = 0;
+let expansionX = 0;
+let expansionY = 0;
+
 document.onmousedown = () => {
-    expansion += 100;
+    expansionX += 100;
 }
 const up = 38;
 const down = 40;
 document.onkeyup = (event) => {
     console.log(event.keyCode);
     if (event.keyCode === up) {
-        expansion += 100;
+        expansionX += 100;
     } else if (event.keyCode === down) {
-        if (expansion > 100) {
-            expansion -= 100;
+        if (expansionX > 100) {
+            expansionX -= 100;
         }
     }
 }
@@ -86,14 +178,25 @@ const curves = () => {
 const line = curves();
 
 let frames = 0;
+const dataMap = { 0: 15, 1: 10, 2: 8, 3: 9, 4: 6, 5: 5, 6: 2, 7: 1, 8: 0, 9: 4, 10: 3, 11: 7, 12: 11, 13: 12, 14: 13, 15: 14 };
 const animate = (cubes) => {
     requestAnimationFrame(() => animate(cubes));
-    if (expansion > 0) {
-        expansion--;
+    if (expansionX > 0) {
+        expansionX -= expansionX * 0.05;
+    }
+    if (expansionY > 0) {
+        expansionY -= expansionY * 0.05;
     }
     frames++;
+    const magicX = soundValues[0] / 255 * 10;
+    const magicY = soundValues[7] / 255 * 10;
+
+    expansionX += magicX;
+    expansionY += magicY;
+    
     cubes.forEach((cube, i) => {
-        cube.rotation.x = Math.sin(frames + i)
+        // console.log(soundValues)
+        cube.rotation.x = Math.sin(frames + i);
         cube.rotation.y += 0.01;
         // if(frames % cube.maxFrames === 0){
         //     cube.position.x = -5 + Math.random() * 10;
@@ -102,8 +205,8 @@ const animate = (cubes) => {
         // cube.position.x = line[(frames + i) % line.length].x + line[i].x;
         // cube.position.y = line[(frames + i) % line.length].y + line[i].y;
         // cube.position.z = -i * 0.5 + line[i].x * line[i].y; neat z-view trick
-        cube.position.x = pos.x + Math.sin(frames + i) * (expansion / 100);
-        cube.position.y = pos.y + Math.cos(frames + i) * (expansion / 100);
+        cube.position.x = pos.x + Math.sin(frames + i) * (expansionX / 100);
+        cube.position.y = pos.y + Math.cos(frames + i) * (expansionY / 100);
         // cube.position.z = -i + 6; don't do this
     })
 
