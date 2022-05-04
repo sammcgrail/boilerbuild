@@ -184,10 +184,10 @@ const dataMap = { 0: 15, 1: 10, 2: 8, 3: 9, 4: 6, 5: 5, 6: 2, 7: 1, 8: 0, 9: 4, 
 const animate = (shapes) => {
     requestAnimationFrame(() => animate(shapes));
     if (expansionX > 0) {
-        expansionX -= expansionX * 0.8;
+        expansionX -= expansionX * 0.01;
     }
     if (expansionY > 0) {
-        expansionY -= expansionY * 0.8;
+        expansionY -= expansionY * 0.01;
     }
     frames++;
     const magicX = soundValues[0] / 255 * 10;
