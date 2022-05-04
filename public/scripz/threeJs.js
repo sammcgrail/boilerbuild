@@ -52,7 +52,7 @@ const animate = (cubes) => {
     requestAnimationFrame(() => animate(cubes));
     frames++;
     cubes.forEach((cube, i) => {
-        cube.rotation.x += 0.01;
+        cube.rotation.x = Math.sin(frames + i)
         cube.rotation.y += 0.01;
         // if(frames % cube.maxFrames === 0){
         //     cube.position.x = -5 + Math.random() * 10;
@@ -76,10 +76,10 @@ loader.load(
             map: texture
         })
         const cubes = [];
-        for (let i = 0; i < 100; i++) {
+        for (let i = 0; i < 80; i++) {
             const cube = makeACube(material);
-            cube.position.x = line[i].x;
-            cube.position.y = line[i].y;
+            cube.position.x = line[0].x;
+            cube.position.y = line[0].y;
             cubes.push(cube);
         }
         console.log(cubes, scene);
