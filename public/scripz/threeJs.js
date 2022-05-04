@@ -65,8 +65,8 @@ renderer.setSize(window.innerWidth, window.innerHeight);
 
 const material = new THREE.MeshLambertMaterial({ color: 0xffffff });
 const hemiLight = new THREE.HemisphereLight(0xffffff, 0x404040, 0.5);
-const pointLight = new THREE.PointLight(0xffffff, 3, 100);
-pointLight.position.set(0, 0, 1);
+const pointLight = new THREE.PointLight(0xffffff, 4, 100);
+pointLight.position.set(0, 0, 2);
 scene.add(hemiLight);
 scene.add(pointLight);
 
@@ -147,7 +147,7 @@ const makeSpheresWithTexture = (texture) => {
     const material = new THREE.MeshLambertMaterial({
         map: texture,
         transparent: true,
-        opacity: 0.5
+        opacity: 0.9
     })
     const opaqueMaterial = new THREE.MeshLambertMaterial({
         map: texture,
@@ -155,7 +155,7 @@ const makeSpheresWithTexture = (texture) => {
     })
     const colorMaterial = new THREE.MeshBasicMaterial({ color: 0xffff00 })
     const spheres = [];
-    for (let i = 0; i < 24; i++) {
+    for (let i = 0; i < 20; i++) {
         let sphere;
         sphere = makeASphere(material);
         sphere.position.x = 0;
@@ -184,7 +184,7 @@ const dataMap = { 0: 15, 1: 10, 2: 8, 3: 9, 4: 6, 5: 5, 6: 2, 7: 1, 8: 0, 9: 4, 
 const animate = (shapes) => {
     requestAnimationFrame(() => animate(shapes));
     if (expansionX > 0) {
-        expansionX -= expansionX * 0.01;
+        expansionX -= expansionX * 0.05;
     }
     if (expansionY > 0) {
         expansionY -= expansionY * 0.01;
