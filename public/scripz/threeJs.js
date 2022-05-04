@@ -151,7 +151,7 @@ const animate = (cubes) => {
     }
     frames++;
     const magicX = soundValues[0] / 255 * 10;
-    const magicY = soundValues[7] / 255 * 10;
+    const magicY = soundValues[1] / 255 * 10;
 
     expansionX += magicX;
     expansionY += magicY;
