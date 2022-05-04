@@ -64,8 +64,11 @@ const renderer = new THREE.WebGLRenderer();
 renderer.setSize(window.innerWidth, window.innerHeight);
 
 const material = new THREE.MeshLambertMaterial({ color: 0xffffff });
-const light = new THREE.HemisphereLight(0xf6e86d, 0x404040, 0.5);
-scene.add(light);
+const hemiLight = new THREE.HemisphereLight(0xffffff, 0x404040, 0.5);
+const pointLight = new THREE.PointLight(0xffffff, 3, 100);
+pointLight.position.set(0, 0, 1);
+scene.add(hemiLight);
+scene.add(pointLight);
 
 let expansionX = 0;
 let expansionY = 0;
@@ -76,7 +79,6 @@ document.onmousedown = () => {
 const up = 38;
 const down = 40;
 document.onkeyup = (event) => {
-    console.log(event.keyCode);
     if (event.keyCode === up) {
         expansionX += 100;
     } else if (event.keyCode === down) {
@@ -101,7 +103,12 @@ document.onmousemove = (event) => {
     pos.copy(camera.position).add(vec.multiplyScalar(distance));
 }
 
-
+const makeASphere = (material) => {
+    const geometry = new THREE.SphereGeometry(0.5, 32, 16);
+    const sphere = new THREE.Mesh(geometry, material);
+    scene.add(sphere);
+    return sphere;
+}
 
 const makeACube = (material) => {
     const geometry = new THREE.BoxGeometry();
@@ -112,17 +119,50 @@ const makeACube = (material) => {
 }
 
 const makeCubesWithTexture = (texture) => {
-    const material = new THREE.MeshBasicMaterial({
-        map: texture
+    const material = new THREE.MeshLambertMaterial({
+        map: texture,
+        transparent: true,
+        opacity: 0.5
+    })
+    const opaqueMaterial = new THREE.MeshLambertMaterial({
+        map: texture,
+        transparent: true
     })
     const cubes = [];
-    for (let i = 0; i < 80; i++) {
-        const cube = makeACube(material);
+    for (let i = 0; i < 200; i++) {
+        let cube;
+        if(i === 0) {
+            cube = makeACube(opaqueMaterial);
+        } else {
+            cube = makeACube(material);
+        }
         cube.position.x = 0;
         cube.position.y = 0;
         cubes.push(cube);
     }
     animate(cubes);
+}
+
+const makeSpheresWithTexture = (texture) => {
+    const material = new THREE.MeshLambertMaterial({
+        map: texture,
+        transparent: true,
+        opacity: 0.5
+    })
+    const opaqueMaterial = new THREE.MeshLambertMaterial({
+        map: texture,
+        transparent: true
+    })
+    const colorMaterial = new THREE.MeshBasicMaterial({ color: 0xffff00 })
+    const spheres = [];
+    for (let i = 0; i < 12; i++) {
+        let sphere;
+        sphere = makeASphere(material);
+        sphere.position.x = 0;
+        sphere.position.y = 0;
+        spheres.push(sphere);
+    }
+    animate(spheres);
 }
 
 const curves = () => {
@@ -141,13 +181,13 @@ const line = curves();
 
 let frames = 0;
 const dataMap = { 0: 15, 1: 10, 2: 8, 3: 9, 4: 6, 5: 5, 6: 2, 7: 1, 8: 0, 9: 4, 10: 3, 11: 7, 12: 11, 13: 12, 14: 13, 15: 14 };
-const animate = (cubes) => {
-    requestAnimationFrame(() => animate(cubes));
+const animate = (shapes) => {
+    requestAnimationFrame(() => animate(shapes));
     if (expansionX > 0) {
-        expansionX -= expansionX * 0.05;
+        expansionX -= expansionX * 0.08;
     }
     if (expansionY > 0) {
-        expansionY -= expansionY * 0.05;
+        expansionY -= expansionY * 0.08;
     }
     frames++;
     const magicX = soundValues[0] / 255 * 10;
@@ -155,29 +195,37 @@ const animate = (cubes) => {
 
     expansionX += magicX;
     expansionY += magicY;
-    
-    cubes.forEach((cube, i) => {
+    pointLight.intensity = expansionX / 200;
+    // const sizeVector = new THREE.Vector3(expansionX / 255, expansionY / 255, 10);
+    const sizeVector = { x: expansionX/255, y: expansionY/255, z: 1 };
+    console.log(sizeVector);
+    console.log(shapes[0]);
+
+    shapes.forEach((shape, i) => {
+        console.log(shape);
+        if(i !== 0) shape.material.opacity = expansionX / 255;
         // console.log(soundValues)
-        cube.rotation.x = Math.sin(frames + i);
-        cube.rotation.y += 0.01;
-        // if(frames % cube.maxFrames === 0){
-        //     cube.position.x = -5 + Math.random() * 10;
-        //     cube.position.y = -5 + Math.random() * 10;
+        shape.scale.set(expansionX/255, expansionX/255, expansionX/255);
+        shape.rotation.x += 0.01;
+        shape.rotation.y += 0.01;
+        // if(frames % shape.maxFrames === 0){
+        //     shape.position.x = -5 + Math.random() * 10;
+        //     shape.position.y = -5 + Math.random() * 10;
         // }
-        // cube.position.x = line[(frames + i) % line.length].x + line[i].x;
-        // cube.position.y = line[(frames + i) % line.length].y + line[i].y;
-        // cube.position.z = -i * 0.5 + line[i].x * line[i].y; neat z-view trick
-        cube.position.x = pos.x + Math.sin(frames + i) * (expansionX / 100);
-        cube.position.y = pos.y + Math.cos(frames + i) * (expansionY / 100);
-        // cube.position.z = -i + 6; don't do this
+        // shape.position.x = line[(frames + i) % line.length].x + line[i].x;
+        // shape.position.y = line[(frames + i) % line.length].y + line[i].y;
+        // shape.position.z = -i * 0.5 + line[i].x * line[i].y; neat z-view trick
+        shape.position.x = pos.x + Math.sin(frames/200 + i) * (expansionX / 100);
+        shape.position.y = pos.y + Math.cos(frames/200 + i) * (expansionY / 100);
+        // shape.position.z = -i + 6; don't do this
     })
 
     renderer.render(scene, camera);
 }
 
 loader.load(
-    'https://cdn.vox-cdn.com/thumbor/KCM3M4hs7f01BCOspPDVmi7z0hw=/0x0:1024x683/1200x900/filters:focal(431x261:593x423)/cdn.vox-cdn.com/uploads/chorus_image/image/55950361/6777933006_1a4f5489d4_b.0.6.jpg',
-    (texture) => makeCubesWithTexture(texture),
+    '/pizza.png',
+    (texture) => makeSpheresWithTexture(texture),
     undefined,
     function (err) {
         console.error("haha fuck y")
