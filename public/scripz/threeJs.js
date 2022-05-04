@@ -155,7 +155,7 @@ const makeSpheresWithTexture = (texture) => {
     })
     const colorMaterial = new THREE.MeshBasicMaterial({ color: 0xffff00 })
     const spheres = [];
-    for (let i = 0; i < 12; i++) {
+    for (let i = 0; i < 24; i++) {
         let sphere;
         sphere = makeASphere(material);
         sphere.position.x = 0;
@@ -173,7 +173,7 @@ const curves = () => {
         new THREE.Vector2(2, 4),
         new THREE.Vector2(2, 3)
     );
-    const points = curve.getPoints(100);
+    const points = curve.getPoints(150);
     return points;
 }
 
@@ -195,7 +195,7 @@ const animate = (shapes) => {
 
     expansionX += magicX;
     expansionY += magicY;
-    pointLight.intensity = expansionX / 200;
+    pointLight.intensity = expansionX / 20;
     // const sizeVector = new THREE.Vector3(expansionX / 255, expansionY / 255, 10);
     const sizeVector = { x: expansionX/255, y: expansionY/255, z: 1 };
     console.log(sizeVector);
