@@ -64,7 +64,7 @@ const renderer = new THREE.WebGLRenderer();
 renderer.setSize(window.innerWidth, window.innerHeight);
 
 const material = new THREE.MeshLambertMaterial({ color: 0xffffff });
-const hemiLight = new THREE.HemisphereLight(0xffffff, 0x404040, 0.5);
+const hemiLight = new THREE.HemisphereLight(0xffffff, 0x404040, 0.9);
 const pointLight = new THREE.PointLight(0xffffff, 4, 100);
 pointLight.position.set(0, 0, 2);
 scene.add(hemiLight);
