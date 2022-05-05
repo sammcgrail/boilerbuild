@@ -122,7 +122,7 @@ const makeCubesWithTexture = (texture) => {
     const material = new THREE.MeshLambertMaterial({
         map: texture,
         transparent: true,
-        opacity: 0.5
+        opacity: 0.8
     })
     const opaqueMaterial = new THREE.MeshLambertMaterial({
         map: texture,
