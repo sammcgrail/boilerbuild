@@ -1,5 +1,7 @@
 {
   "projects": {
-    "default": "boilerbuild"
-  }
+    "default": "boilerbuild",
+    "stagin": "harmonycalmsgiant"
+  },
+  "targets": {}
 }
