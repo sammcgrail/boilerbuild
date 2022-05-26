@@ -198,11 +198,13 @@ const animate = (shapes) => {
     pointLight.intensity = expansionX / 2000;
     // const sizeVector = new THREE.Vector3(expansionX / 255, expansionY / 255, 10);
     const sizeVector = { x: expansionX/255, y: expansionY/255, z: 1 };
-    console.log(sizeVector);
-    console.log(shapes[0]);
+    // console.log(sizeVector);
+    // console.log(shapes[0]);
 
+    expansionX = _.clamp(expansionX, 50, 355);
+    expansionY = _.clamp(expansionY, 50, 355);
     shapes.forEach((shape, i) => {
-        console.log(shape);
+        // console.log(shape);
         if(i !== 0) shape.material.opacity = expansionX / 255;
         // console.log(soundValues)
         shape.scale.set(expansionX/255, expansionX/255, expansionX/255);
