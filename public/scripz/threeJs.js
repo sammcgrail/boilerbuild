@@ -114,15 +114,15 @@ document.onmousemove = (event) => {
 
 const createGrid = () => {
     const colorMaterial = new THREE.MeshBasicMaterial({ color: new THREE.Color("blue").getHex() })
-    for(let i = 0; i < 100; ++i) {
+    for (let i = 0; i < 100; ++i) {
         const pointsX = [];
         pointsX.push(new THREE.Vector3(i - 50, -5, -50));
         pointsX.push(new THREE.Vector3(i - 50, -5, 50));
         const geometryX = new THREE.BufferGeometry().setFromPoints(pointsX);
-        
+
         const pointsY = [];
-        pointsY.push(new THREE.Vector3(-50, -5, 50-i));
-        pointsY.push(new THREE.Vector3(50, -5, 50-i));
+        pointsY.push(new THREE.Vector3(-50, -5, 50 - i));
+        pointsY.push(new THREE.Vector3(50, -5, 50 - i));
         const geometryY = new THREE.BufferGeometry().setFromPoints(pointsY);
 
         const lineX = new THREE.Line(geometryX, colorMaterial);
@@ -180,10 +180,10 @@ const makePhysicsCube = (texture, xPos, isDynamic = true) => {
     const physicsGeometry = world.add({
         type: "box",
         size: [1, 1, 1],
-        pos: [0, xPos, 0],
+        pos: [xPos, 0, 0],
         move: isDynamic,
         density: 1,
-        friction: 1,
+        friction: 10,
         belongsTo: 1,
         restitution: Math.random() * 3
     });
@@ -191,15 +191,15 @@ const makePhysicsCube = (texture, xPos, isDynamic = true) => {
     return cube;
 }
 
-const makePhysicsPizza = (texture, xPos, isDynamic = true) => {
+const makePhysicsPizza = (texture, pos, isDynamic = true) => {
     const pizza = makeAPizza(texture);
     const physicsGeometry = world.add({
         type: "cylinder",
         size: [1, 0.2, 1],
-        pos: [0, xPos, 0],
+        pos: pos,
         move: isDynamic,
         density: 1,
-        friction: 1,
+        friction: 3,
         belongsTo: 1,
         restitution: Math.random() * 3
     });
@@ -226,7 +226,7 @@ const makeCubesWithTexture = (texture) => {
         if (i === 0) {
             cube = makePhysicsCube(texture, false);
         } else {
-            cube = makePhysicsCube(texture,false);
+            cube = makePhysicsCube(texture, false);
         }
         cube.position.x = 0;
         cube.position.y = 0;
@@ -275,8 +275,9 @@ const animate = (shapes, backdrop, physicsShapes, texture) => {
     const magicX = soundValues[0] / 255 * 10;
     const magicY = soundValues[1] / 255 * 10;
 
-    if(frames % 60 === 0) {
-        physicsShapes.push(makePhysicsPizza(texture, (Math.random() * 2)-1));
+    console.log(backdrop.position);
+    if (frames % 60 === 0) {
+        physicsShapes.push(makePhysicsPizza(texture, [camera.position.x, camera.position.y - 1, 0], (Math.random() * 2) - 1));
     }
 
     expansionX += magicX;
@@ -289,8 +290,8 @@ const animate = (shapes, backdrop, physicsShapes, texture) => {
     backdrop.rotation.y = (frames / 155) % 180;
     backdrop.rotation.x = (frames / 155) % 180;
     // backdrop.position.z = -400 / magicX;
-    expansionX = _.clamp(expansionX, 50, 355);
-    expansionY = _.clamp(expansionY, 50, 355);
+    expansionX = _.clamp(expansionX, 30, 355);
+    expansionY = _.clamp(expansionY, 30, 355);
 
     shapes.forEach((shape, i) => {
         // console.log(shape);
@@ -315,8 +316,8 @@ const animate = (shapes, backdrop, physicsShapes, texture) => {
         shape.position.copy(shape.physics.getPosition());
         shape.quaternion.copy(shape.physics.getQuaternion());
     })
-    camera.position.y = Math.sin(frames / 60);
-    camera.position.x = Math.cos(frames / 60);
+    camera.position.y = Math.sin(frames / 180);
+    camera.position.x = Math.cos(frames / 180);
     world.step();
     renderer.render(scene, camera);
 }
@@ -330,7 +331,7 @@ loader.load(
             pos: [0, -5.2, 0],
             move: false,
             density: 1,
-            friction: 1,
+            friction: 3,
             belongsTo: 1
         });
         createGrid();
