@@ -64,8 +64,9 @@ const renderer = new THREE.WebGLRenderer();
 renderer.setSize(window.innerWidth, window.innerHeight);
 
 const material = new THREE.MeshLambertMaterial({ color: 0xffffff });
-const hemiLight = new THREE.HemisphereLight(0xffffff, 0x404040, 0.9);
+const hemiLight = new THREE.HemisphereLight(new THREE.Color("blue").getHex(), new THREE.Color("red").getHex(), 0.9);
 const pointLight = new THREE.PointLight(0xffffff, 4, 100);
+const spotLightRed = new THREE.SpotLight(0)
 pointLight.position.set(0, 0, 2);
 scene.add(hemiLight);
 scene.add(pointLight);
@@ -118,6 +119,18 @@ const makeACube = (material) => {
     return cube;
 }
 
+const makeBackdropWithTexture = (texture) => {
+    const material = new THREE.MeshLambertMaterial({
+        map: texture,
+        transparent: true
+    });
+    const geometry = new THREE.BoxGeometry(32, 32, 32);
+    const plane = new THREE.Mesh(geometry, material);
+    plane.position.z = -30;
+    scene.add(plane);
+    return plane;
+}
+
 const makeCubesWithTexture = (texture) => {
     const material = new THREE.MeshLambertMaterial({
         map: texture,
@@ -129,18 +142,18 @@ const makeCubesWithTexture = (texture) => {
         transparent: true
     })
     const cubes = [];
-    for (let i = 0; i < 200; i++) {
+    for (let i = 0; i < 10; i++) {
         let cube;
         if(i === 0) {
             cube = makeACube(opaqueMaterial);
         } else {
-            cube = makeACube(material);
+            cube = makeACube(opaqueMaterial);
         }
         cube.position.x = 0;
         cube.position.y = 0;
         cubes.push(cube);
     }
-    animate(cubes);
+    return cubes;
 }
 
 const makeSpheresWithTexture = (texture) => {
@@ -155,14 +168,14 @@ const makeSpheresWithTexture = (texture) => {
     })
     const colorMaterial = new THREE.MeshBasicMaterial({ color: 0xffff00 })
     const spheres = [];
-    for (let i = 0; i < 20; i++) {
+    for (let i = 0; i < 10; i++) {
         let sphere;
-        sphere = makeASphere(material);
+        sphere = makeASphere(opaqueMaterial);
         sphere.position.x = 0;
         sphere.position.y = 0;
         spheres.push(sphere);
     }
-    animate(spheres);
+    return spheres;
 }
 
 const curves = () => {
@@ -181,8 +194,8 @@ const line = curves();
 
 let frames = 0;
 const dataMap = { 0: 15, 1: 10, 2: 8, 3: 9, 4: 6, 5: 5, 6: 2, 7: 1, 8: 0, 9: 4, 10: 3, 11: 7, 12: 11, 13: 12, 14: 13, 15: 14 };
-const animate = (shapes) => {
-    requestAnimationFrame(() => animate(shapes));
+const animate = (shapes, backdrop) => {
+    requestAnimationFrame(() => animate(shapes, backdrop));
     if (expansionX > 0) {
         expansionX -= expansionX * 0.05;
     }
@@ -200,16 +213,19 @@ const animate = (shapes) => {
     const sizeVector = { x: expansionX/255, y: expansionY/255, z: 1 };
     // console.log(sizeVector);
     // console.log(shapes[0]);
-
+    backdrop.rotation.y = (frames / 155) % 180;
+    backdrop.rotation.x = (frames / 155) % 180;
+    // backdrop.position.z = -400 / magicX;
     expansionX = _.clamp(expansionX, 50, 355);
     expansionY = _.clamp(expansionY, 50, 355);
+
     shapes.forEach((shape, i) => {
         // console.log(shape);
-        if(i !== 0) shape.material.opacity = expansionX / 255;
+        if(i !== 0) shape.material.opacity = (expansionX * i) / 255;
         // console.log(soundValues)
         shape.scale.set(expansionX/255, expansionX/255, expansionX/255);
-        shape.rotation.x += 0.01;
-        shape.rotation.y += 0.01;
+        // shape.rotation.x += 0.01;
+        // shape.rotation.y += 0.01;
         // if(frames % shape.maxFrames === 0){
         //     shape.position.x = -5 + Math.random() * 10;
         //     shape.position.y = -5 + Math.random() * 10;
@@ -217,8 +233,8 @@ const animate = (shapes) => {
         // shape.position.x = line[(frames + i) % line.length].x + line[i].x;
         // shape.position.y = line[(frames + i) % line.length].y + line[i].y;
         // shape.position.z = -i * 0.5 + line[i].x * line[i].y; neat z-view trick
-        shape.position.x = pos.x + Math.sin(frames/20 + i) * (expansionX / 100);
-        shape.position.y = pos.y + Math.cos(frames/20 + i) * (expansionY / 100);
+        shape.position.x = pos.x + Math.sin(frames/60 + i) * (expansionX / 100);
+        shape.position.y = pos.y + Math.cos(frames/60 + i) * (expansionY / 100);
         // shape.position.z = -i + 6; don't do this
     })
 
@@ -227,9 +243,15 @@ const animate = (shapes) => {
 
 loader.load(
     '/pizza.png',
-    (texture) => makeSpheresWithTexture(texture),
+    (texture) => {
+        const cubes = makeCubesWithTexture(texture);
+        const spheres = makeSpheresWithTexture(texture);
+        const shapes = spheres.concat(cubes);
+        const backdrop = makeBackdropWithTexture(texture);
+        animate(shapes, backdrop);
+    },
     undefined,
     function (err) {
         console.error("haha fuck y")
     }
-)
+);
