@@ -13,9 +13,17 @@ const createDOMElements = () => {
 createDOMElements();
 
 let soundValues = [];
-for (let i =0; i < 16; i++) {
+for (let i = 0; i < 16; i++) {
     soundValues.push(0);
 }
+
+const world = new OIMO.World({
+    timestep: 1 / 60,
+    iterations: 8,
+    broadphase: 2,
+    worldscale: 1,
+    gravity: [0, -9.8, 0]
+});
 
 const init = () => {
     // Creating initial DOM elements
@@ -104,18 +112,51 @@ document.onmousemove = (event) => {
     pos.copy(camera.position).add(vec.multiplyScalar(distance));
 }
 
-const makeASphere = (material) => {
+const makeASphere = (texture) => {
+    const material = new THREE.MeshLambertMaterial({
+        map: texture,
+        transparent: true,
+        opacity: 0.8
+    })
+    const opaqueMaterial = new THREE.MeshLambertMaterial({
+        map: texture,
+        transparent: true
+    })
     const geometry = new THREE.SphereGeometry(0.5, 32, 16);
-    const sphere = new THREE.Mesh(geometry, material);
+    const sphere = new THREE.Mesh(geometry, opaqueMaterial);
     scene.add(sphere);
     return sphere;
 }
 
-const makeACube = (material) => {
+const makeACube = (texture) => {
+    const material = new THREE.MeshLambertMaterial({
+        map: texture,
+        transparent: true,
+        opacity: 0.8
+    })
+    const opaqueMaterial = new THREE.MeshLambertMaterial({
+        map: texture,
+        transparent: true
+    })
     const geometry = new THREE.BoxGeometry();
-    const cube = new THREE.Mesh(geometry, material);
+    const cube = new THREE.Mesh(geometry, opaqueMaterial);
     cube.maxFrames = Math.floor(Math.random() * 300);
     scene.add(cube);
+    return cube;
+}
+
+const makePhysicsCube = (texture, xPos, isDynamic = true) => {
+    const cube = makeACube(texture);
+    const physicsGeometry = world.add({
+        type: "box",
+        size: [1, 1, 1],
+        pos: [0, xPos, -2],
+        move: isDynamic,
+        density: 1,
+        friction: 1,
+        belongsTo: 1
+    });
+    cube.physics = physicsGeometry;
     return cube;
 }
 
@@ -126,28 +167,19 @@ const makeBackdropWithTexture = (texture) => {
     });
     const geometry = new THREE.BoxGeometry(32, 32, 32);
     const plane = new THREE.Mesh(geometry, material);
-    plane.position.z = -30;
+    plane.position.z = -300;
     scene.add(plane);
     return plane;
 }
 
 const makeCubesWithTexture = (texture) => {
-    const material = new THREE.MeshLambertMaterial({
-        map: texture,
-        transparent: true,
-        opacity: 0.8
-    })
-    const opaqueMaterial = new THREE.MeshLambertMaterial({
-        map: texture,
-        transparent: true
-    })
     const cubes = [];
     for (let i = 0; i < 10; i++) {
         let cube;
-        if(i === 0) {
-            cube = makeACube(opaqueMaterial);
+        if (i === 0) {
+            cube = makePhysicsCube(texture, false);
         } else {
-            cube = makeACube(opaqueMaterial);
+            cube = makePhysicsCube(texture,false);
         }
         cube.position.x = 0;
         cube.position.y = 0;
@@ -157,20 +189,11 @@ const makeCubesWithTexture = (texture) => {
 }
 
 const makeSpheresWithTexture = (texture) => {
-    const material = new THREE.MeshLambertMaterial({
-        map: texture,
-        transparent: true,
-        opacity: 0.9
-    })
-    const opaqueMaterial = new THREE.MeshLambertMaterial({
-        map: texture,
-        transparent: true
-    })
     const colorMaterial = new THREE.MeshBasicMaterial({ color: 0xffff00 })
     const spheres = [];
     for (let i = 0; i < 10; i++) {
         let sphere;
-        sphere = makeASphere(opaqueMaterial);
+        sphere = makeASphere(texture);
         sphere.position.x = 0;
         sphere.position.y = 0;
         spheres.push(sphere);
@@ -194,8 +217,8 @@ const line = curves();
 
 let frames = 0;
 const dataMap = { 0: 15, 1: 10, 2: 8, 3: 9, 4: 6, 5: 5, 6: 2, 7: 1, 8: 0, 9: 4, 10: 3, 11: 7, 12: 11, 13: 12, 14: 13, 15: 14 };
-const animate = (shapes, backdrop) => {
-    requestAnimationFrame(() => animate(shapes, backdrop));
+const animate = (shapes, backdrop, physicsShapes, texture) => {
+    requestAnimationFrame(() => animate(shapes, backdrop, physicsShapes, texture));
     if (expansionX > 0) {
         expansionX -= expansionX * 0.05;
     }
@@ -206,11 +229,15 @@ const animate = (shapes, backdrop) => {
     const magicX = soundValues[0] / 255 * 10;
     const magicY = soundValues[1] / 255 * 10;
 
+    if(frames % 60 === 0) {
+        physicsShapes.push(makePhysicsCube(texture, (Math.random() * 2)-1));
+    }
+
     expansionX += magicX;
     expansionY += magicY;
     pointLight.intensity = expansionX / 2000;
     // const sizeVector = new THREE.Vector3(expansionX / 255, expansionY / 255, 10);
-    const sizeVector = { x: expansionX/255, y: expansionY/255, z: 1 };
+    const sizeVector = { x: expansionX / 255, y: expansionY / 255, z: 1 };
     // console.log(sizeVector);
     // console.log(shapes[0]);
     backdrop.rotation.y = (frames / 155) % 180;
@@ -221,9 +248,9 @@ const animate = (shapes, backdrop) => {
 
     shapes.forEach((shape, i) => {
         // console.log(shape);
-        if(i !== 0) shape.material.opacity = (expansionX * i) / 255;
+        if (i !== 0) shape.material.opacity = (expansionX * i) / 255;
         // console.log(soundValues)
-        shape.scale.set(expansionX/255, expansionX/255, expansionX/255);
+        shape.scale.set(expansionX / 255, expansionX / 255, expansionX / 255);
         // shape.rotation.x += 0.01;
         // shape.rotation.y += 0.01;
         // if(frames % shape.maxFrames === 0){
@@ -233,22 +260,40 @@ const animate = (shapes, backdrop) => {
         // shape.position.x = line[(frames + i) % line.length].x + line[i].x;
         // shape.position.y = line[(frames + i) % line.length].y + line[i].y;
         // shape.position.z = -i * 0.5 + line[i].x * line[i].y; neat z-view trick
-        shape.position.x = pos.x + Math.sin(frames/60 + i) * (expansionX / 100);
-        shape.position.y = pos.y + Math.cos(frames/60 + i) * (expansionY / 100);
+        shape.position.x = pos.x + Math.sin(frames / 60 + i) * (expansionX / 100);
+        shape.position.y = pos.y + Math.cos(frames / 60 + i) * (expansionY / 100);
+        shape.position.z = -2;
+        shape.physics.setPosition(shape.position);
         // shape.position.z = -i + 6; don't do this
     })
-
+    physicsShapes.forEach((shape, i) => {
+        shape.position.copy(shape.physics.getPosition());
+        shape.quaternion.copy(shape.physics.getQuaternion());
+        console.log(shape.position.z);
+    })
+    world.step();
     renderer.render(scene, camera);
 }
 
 loader.load(
     '/pizza.png',
     (texture) => {
+        world.add({
+            type: "box",
+            size: [100, 0.5, 100],
+            pos: [0, -5.2, 0],
+            move: false,
+            density: 1,
+            friction: 1,
+            belongsTo: 1
+        });
         const cubes = makeCubesWithTexture(texture);
-        const spheres = makeSpheresWithTexture(texture);
-        const shapes = spheres.concat(cubes);
+        // const spheres = makeSpheresWithTexture(texture);
         const backdrop = makeBackdropWithTexture(texture);
-        animate(shapes, backdrop);
+        const physicsShapes = () => {
+            return [makePhysicsCube(texture)];
+        }
+        animate(cubes, backdrop, physicsShapes(), texture);
     },
     undefined,
     function (err) {
