@@ -275,7 +275,7 @@ const animate = (shapes, backdrop, physicsShapes, texture) => {
     const magicX = soundValues[0] / 255 * 10;
     const magicY = soundValues[1] / 255 * 10;
 
-    console.log(backdrop.position);
+    // console.log(backdrop.position);
     if (frames % 60 === 0) {
         physicsShapes.push(makePhysicsPizza(texture, [camera.position.x, camera.position.y - 1, 0], (Math.random() * 2) - 1));
     }
@@ -348,3 +348,4 @@ loader.load(
         console.error("haha fuck y")
     }
 );
+
