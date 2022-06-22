@@ -170,12 +170,20 @@ document.onmousemove = (event) => {
     pos.copy(camera.position).add(vec.multiplyScalar(distance));
 };
 
-const createPlayer = (texture) => {
-    const playerCube = makePhysicsCube(texture, [0, 1, 0], 2, true);
+const makePlayer = (texture) => {
+    const playerCube = makePhysicsCube({
+        texture,
+        position: [0, 1, 0],
+        sideSize: 2,
+        bounciness: 0.2,
+        density: 1,
+        friction: 0.02,
+        isDynamic: true,
+    });
     return playerCube;
 };
 
-const createGrid = () => {
+const makeGrid = () => {
     const material = makeColorMaterial('blue');
     for (let i = 0; i < worldSize; ++i) {
         const pointsX = [];
@@ -203,9 +211,9 @@ const makeASphere = (texture) => {
     return sphere;
 };
 
-const makeACube = (texture) => {
+const makeACube = (texture, sideSize) => {
     const material = makeOpaqueMaterial(texture);
-    const geometry = new THREE.BoxGeometry();
+    const geometry = new THREE.BoxGeometry(sideSize, sideSize, sideSize);
     const cube = new THREE.Mesh(geometry, material);
     cube.maxFrames = Math.floor(Math.random() * 300);
     scene.add(cube);
@@ -220,21 +228,23 @@ const makeAPizza = (texture) => {
     return cylinder;
 };
 
-const makePhysicsCube = (
+const makePhysicsCube = ({
     texture,
     position,
-    sideSize = 1,
-    bounciness = 1,
-    isDynamic = true
-) => {
-    const cube = makeACube(texture);
+    sideSize,
+    bounciness,
+    density,
+    friction,
+    isDynamic,
+}) => {
+    const cube = makeACube(texture, sideSize);
     const physicsGeometry = world.add({
         type: 'box',
         size: [sideSize, sideSize, sideSize],
         pos: position,
         move: isDynamic,
-        density: 1,
-        friction: 10,
+        density: density,
+        friction: friction,
         belongsTo: 1,
         restitution: bounciness,
     });
@@ -324,6 +334,7 @@ globalEventBus = createNanoEvents();
 
 let axis = new THREE.Vector3(0, 1, 0);
 var pointing = new THREE.Vector3(0, 0, 0);
+var cameraGimble = new THREE.Vector3(0, 10, 10);
 
 const animate = (backdrop, physicsShapes, texture) => {
     requestAnimationFrame(() => animate(backdrop, physicsShapes, texture));
@@ -337,10 +348,14 @@ const animate = (backdrop, physicsShapes, texture) => {
     // Takes radians
     function moveInDirection(movementScalar) {
         const lockedPointing = new THREE.Vector3(pointing.x, 0, pointing.z);
-        const force = lockedPointing.clone().multiplyScalar(movementScalar * 1);
+        const force = lockedPointing
+            .clone()
+            .multiplyScalar(movementScalar * 0.5);
         // pointing.applyAxisAngle(axis, rotationAngle);
         player.physics.applyImpulse(new THREE.Vector3(), force);
     }
+
+    function rotatePlayer(rotationDirection) {}
 
     // go forward
     if (keysCurrentlyPressed.w) {
@@ -394,9 +409,9 @@ loader.load(
             friction: 3,
             belongsTo: 1,
         });
-        createGrid();
+        makeGrid();
         const backdrop = makeBackdropWithTexture(texture);
-        player = createPlayer(texture);
+        player = makePlayer(texture);
         animate(backdrop, [player], texture);
     },
     undefined,
