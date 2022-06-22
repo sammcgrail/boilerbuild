@@ -12,22 +12,41 @@ var gui = new dat.GUI({ name: 'Pizza Config' });
 // cameraFolder.add(plane.position, 'z', 0, 100);
 // cameraFolder.open();
 
-// const keys = {
-//     w: 87,
-//     a: 65,
-//     s: 83,
-//     d: 68,
-// };
-// // Camera controls
-// document.onkeyup = (event) => {
-//     if (event.keyCode === up) {
-//         expansionX += 100;
-//     } else if (event.keyCode === down) {
-//         if (expansionX > 100) {
-//             expansionX -= 100;
-//         }
-//     }
-// };
+// Camera controls
+document.onkeydown = (event) => {
+    const axis = new THREE.Vector3(0, 1, 0);
+    const pointing = camera.getWorldDirection(new THREE.Vector3(0, 0, 0));
+
+    function setDirection(rotationAngle) {
+        pointing.applyAxisAngle(axis, rotationAngle);
+        camera.position.x += pointing.x;
+        camera.position.y += pointing.y;
+        camera.position.z += pointing.z;
+    }
+
+    switch (event.key) {
+        case 'w':
+            setDirection(0);
+            break;
+        case 'a':
+            setDirection(Math.PI / 2);
+            break;
+        case 's':
+            setDirection(Math.PI);
+            break;
+        case 'd':
+            setDirection(-Math.PI / 2);
+            break;
+        // rotate left
+        case 'q':
+            camera.rotation.y += 0.1;
+            break;
+        // rotate right
+        case 'e':
+            camera.rotation.y -= 0.1;
+            break;
+    }
+};
 
 // const toolz = gui.addFolder('Tools');
 // toolz.add(sphere.position, 'x', 0, 100);

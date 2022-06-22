@@ -392,8 +392,8 @@ const animate = (shapes, backdrop, physicsShapes, texture) => {
         shape.position.copy(shape.physics.getPosition());
         shape.quaternion.copy(shape.physics.getQuaternion());
     });
-    camera.position.y = Math.sin(frames / 180);
-    camera.position.x = Math.cos(frames / 180);
+    // camera.position.y = Math.sin(frames / 180);
+    // camera.position.x = Math.cos(frames / 180);
     world.step();
     renderer.render(scene, camera);
 };
