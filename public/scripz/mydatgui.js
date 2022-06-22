@@ -12,11 +12,20 @@ var gui = new dat.GUI({ name: 'Pizza Config' });
 // cameraFolder.add(plane.position, 'z', 0, 100);
 // cameraFolder.open();
 
-// Camera controls
+// Keep track of keys being pressed
+const keysCurrentlyPressed = {};
+document.onkeyup = (event) => {
+    keysCurrentlyPressed[event.key] = false;
+};
 document.onkeydown = (event) => {
+    keysCurrentlyPressed[event.key] = true;
+};
+
+// Camera controls
+function cameraLoop() {
     const axis = new THREE.Vector3(0, 1, 0);
     const pointing = camera.getWorldDirection(new THREE.Vector3(0, 0, 0));
-
+    // Takes radians
     function setDirection(rotationAngle) {
         pointing.applyAxisAngle(axis, rotationAngle);
         camera.position.x += pointing.x;
@@ -24,29 +33,32 @@ document.onkeydown = (event) => {
         camera.position.z += pointing.z;
     }
 
-    switch (event.key) {
-        case 'w':
-            setDirection(0);
-            break;
-        case 'a':
-            setDirection(Math.PI / 2);
-            break;
-        case 's':
-            setDirection(Math.PI);
-            break;
-        case 'd':
-            setDirection(-Math.PI / 2);
-            break;
-        // rotate left
-        case 'q':
-            camera.rotation.y += 0.1;
-            break;
-        // rotate right
-        case 'e':
-            camera.rotation.y -= 0.1;
-            break;
+    // go forward
+    if (keysCurrentlyPressed.w) {
+        setDirection(0);
     }
-};
+    // go backward
+    if (keysCurrentlyPressed.s) {
+        setDirection(Math.PI);
+    }
+    // rotate left
+    if (keysCurrentlyPressed.a) {
+        camera.rotation.y += 0.1;
+    }
+    // rotate right
+    if (keysCurrentlyPressed.d) {
+        camera.rotation.y -= 0.1;
+    }
+}
+
+let loopCounter = 0;
+globalEventBus.on('loop', () => {
+    loopCounter++;
+    // Limit this so it's not fired super fast all the time
+    if (loopCounter % 5 === 0) {
+        cameraLoop();
+    }
+});
 
 // const toolz = gui.addFolder('Tools');
 // toolz.add(sphere.position, 'x', 0, 100);

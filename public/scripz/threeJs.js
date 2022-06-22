@@ -329,7 +329,11 @@ const dataMap = {
     14: 13,
     15: 14,
 };
+
+globalEventBus = createNanoEvents();
+
 const animate = (shapes, backdrop, physicsShapes, texture) => {
+    globalEventBus.emit('loop');
     requestAnimationFrame(() =>
         animate(shapes, backdrop, physicsShapes, texture)
     );
