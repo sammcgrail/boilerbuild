@@ -13,25 +13,6 @@ var gui = new dat.GUI({ name: 'Pizza Config' });
 // cameraFolder.open();
 
 // Keep track of keys being pressed
-const keysCurrentlyPressed = {};
-document.onkeyup = (event) => {
-    keysCurrentlyPressed[event.key] = false;
-};
-document.onkeydown = (event) => {
-    keysCurrentlyPressed[event.key] = true;
-};
-
-// Camera controls
-function aLoop() {}
-
-let loopCounter = 0;
-globalEventBus.on('loop', () => {
-    loopCounter++;
-    // Limit this so it's not fired super fast all the time
-    if (loopCounter % 5 === 0) {
-        cameraLoop();
-    }
-});
 
 // const toolz = gui.addFolder('Tools');
 // toolz.add(sphere.position, 'x', 0, 100);
