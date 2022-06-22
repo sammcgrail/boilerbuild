@@ -2,11 +2,33 @@ const visualMainElement = document.querySelector('main');
 const visualValueCount = 16;
 let visualElements;
 
+const makeOpaqueMaterial = (texture) => {
+    return new THREE.MeshLambertMaterial({
+        map: texture,
+        transparent: false,
+    });
+};
+
+const makeColorMaterial = (colorString) => {
+    return new THREE.MeshBasicMaterial({
+        color: new THREE.Color(colorString).getHex(),
+    });
+};
+
+const makeLambertMaterial = (texture, opacity) => {
+    return new THREE.MeshLambertMaterial({
+        map: texture,
+        transparent: true,
+        opacity: opacity,
+    });
+};
+
 // notes
 // Visuals of pizza cube at first are possibly aesthetically displeasing, possibly change to dark brown? get some char
 // consider varying pizza velocity
 
 // - top management
+// 06/21 not addressed
 
 // texture
 
@@ -73,16 +95,8 @@ const init = () => {
         15: 14,
     };
     const processFrame = (data) => {
-        // console.log(data);
         const values = Object.values(data);
         soundValues = values;
-        // let i;
-        // for (i = 0; i < visualValueCount; ++i) {
-        //     const value = values[dataMap[i]] / 255;
-        //     const elmStyles = visualElements[i].style;
-        //     elmStyles.transform = `scaleY( ${value} )`;
-        //     elmStyles.opacity = Math.max(.25, value);
-        // }
     };
 
     const processError = () => {
@@ -93,12 +107,14 @@ const init = () => {
 
     const a = new AudioVisualizer(audioContext, processFrame, processError);
 };
-// init();
 
 let mouseX;
 let mouseY;
 let vec = new THREE.Vector3();
 let pos = new THREE.Vector3();
+const worldSize = 1000;
+
+const defaultPizzaLoc = new THREE.Vector3(0, 0, 0);
 
 const scene = new THREE.Scene();
 const loader = new THREE.TextureLoader();
@@ -108,7 +124,7 @@ const camera = new THREE.PerspectiveCamera(
     0.1,
     1000
 );
-camera.position.z = 10;
+camera.rotation.x = -0.6;
 
 const renderer = new THREE.WebGLRenderer();
 renderer.setSize(window.innerWidth, window.innerHeight);
@@ -125,22 +141,17 @@ pointLight.position.set(0, 0, 2);
 scene.add(hemiLight);
 scene.add(pointLight);
 
-let expansionX = 0;
-let expansionY = 0;
-
-document.onmousedown = () => {
-    expansionX += 100;
-};
 const up = 38;
 const down = 40;
+
+const keysCurrentlyPressed = {};
+
+document.onkeydown = (event) => {
+    keysCurrentlyPressed[event.key] = true;
+};
+
 document.onkeyup = (event) => {
-    if (event.keyCode === up) {
-        expansionX += 100;
-    } else if (event.keyCode === down) {
-        if (expansionX > 100) {
-            expansionX -= 100;
-        }
-    }
+    keysCurrentlyPressed[event.key] = false;
 };
 
 document.body.appendChild(renderer.domElement);
@@ -159,129 +170,108 @@ document.onmousemove = (event) => {
     pos.copy(camera.position).add(vec.multiplyScalar(distance));
 };
 
+const createPlayer = (texture) => {
+    const playerCube = makePhysicsCube(texture, [0, 1, 0], 2, true);
+    return playerCube;
+};
+
 const createGrid = () => {
-    const colorMaterial = new THREE.MeshBasicMaterial({
-        color: new THREE.Color('blue').getHex(),
-    });
-    for (let i = 0; i < 100; ++i) {
+    const material = makeColorMaterial('blue');
+    for (let i = 0; i < worldSize; ++i) {
         const pointsX = [];
-        pointsX.push(new THREE.Vector3(i - 50, -5, -50));
-        pointsX.push(new THREE.Vector3(i - 50, -5, 50));
+        pointsX.push(new THREE.Vector3(i - worldSize / 2, -5, -worldSize / 2));
+        pointsX.push(new THREE.Vector3(i - worldSize / 2, -5, worldSize / 2));
         const geometryX = new THREE.BufferGeometry().setFromPoints(pointsX);
 
         const pointsY = [];
-        pointsY.push(new THREE.Vector3(-50, -5, 50 - i));
-        pointsY.push(new THREE.Vector3(50, -5, 50 - i));
+        pointsY.push(new THREE.Vector3(-worldSize / 2, -5, worldSize / 2 - i));
+        pointsY.push(new THREE.Vector3(worldSize / 2, -5, worldSize / 2 - i));
         const geometryY = new THREE.BufferGeometry().setFromPoints(pointsY);
 
-        const lineX = new THREE.Line(geometryX, colorMaterial);
-        const lineY = new THREE.Line(geometryY, colorMaterial);
+        const lineX = new THREE.Line(geometryX, material);
+        const lineY = new THREE.Line(geometryY, material);
         scene.add(lineX);
         scene.add(lineY);
     }
 };
 
 const makeASphere = (texture) => {
-    const material = new THREE.MeshLambertMaterial({
-        map: texture,
-        transparent: true,
-        opacity: 0.8,
-    });
-    const opaqueMaterial = new THREE.MeshLambertMaterial({
-        map: texture,
-        transparent: true,
-    });
+    const material = makeOpaqueMaterial(texture);
     const geometry = new THREE.SphereGeometry(0.5, 32, 16);
-    const sphere = new THREE.Mesh(geometry, opaqueMaterial);
+    const sphere = new THREE.Mesh(geometry, material);
     scene.add(sphere);
     return sphere;
 };
 
 const makeACube = (texture) => {
-    const material = new THREE.MeshLambertMaterial({
-        map: texture,
-        transparent: true,
-        opacity: 0.8,
-    });
-    const opaqueMaterial = new THREE.MeshLambertMaterial({
-        map: texture,
-        transparent: true,
-    });
+    const material = makeOpaqueMaterial(texture);
     const geometry = new THREE.BoxGeometry();
-    const cube = new THREE.Mesh(geometry, opaqueMaterial);
+    const cube = new THREE.Mesh(geometry, material);
     cube.maxFrames = Math.floor(Math.random() * 300);
     scene.add(cube);
     return cube;
 };
 
 const makeAPizza = (texture) => {
-    const opaqueMaterial = new THREE.MeshLambertMaterial({
-        map: texture,
-    });
+    const material = makeOpaqueMaterial(texture);
     const geometry = new THREE.CylinderGeometry(1, 1, 0.1, 32);
-    const cylinder = new THREE.Mesh(geometry, opaqueMaterial);
+    const cylinder = new THREE.Mesh(geometry, material);
     scene.add(cylinder);
     return cylinder;
 };
 
-const makePhysicsCube = (texture, xPos, isDynamic = true) => {
+const makePhysicsCube = (
+    texture,
+    position,
+    sideSize = 1,
+    bounciness = 1,
+    isDynamic = true
+) => {
     const cube = makeACube(texture);
     const physicsGeometry = world.add({
         type: 'box',
-        size: [1, 1, 1],
-        pos: [xPos, 0, 0],
+        size: [sideSize, sideSize, sideSize],
+        pos: position,
         move: isDynamic,
         density: 1,
         friction: 10,
         belongsTo: 1,
-        restitution: Math.random() * 3,
+        restitution: bounciness,
     });
     cube.physics = physicsGeometry;
     return cube;
 };
 
-const makePhysicsPizza = (texture, pos, isDynamic = true) => {
+const makePhysicsPizza = (
+    texture,
+    position,
+    diameter = 1,
+    depth = 0.2,
+    isDynamic = true,
+    bouncinessRange = 3
+) => {
     const pizza = makeAPizza(texture);
     const physicsGeometry = world.add({
         type: 'cylinder',
-        size: [1, 0.2, 1],
-        pos: pos,
+        size: [diameter, depth, diameter],
+        pos: position,
         move: isDynamic,
         density: 1,
         friction: 3,
         belongsTo: 1,
-        restitution: Math.random() * 3,
+        restitution: Math.random() * bouncinessRange,
     });
     pizza.physics = physicsGeometry;
     return pizza;
 };
 
 const makeBackdropWithTexture = (texture) => {
-    const material = new THREE.MeshLambertMaterial({
-        map: texture,
-        transparent: true,
-    });
+    const material = makeLambertMaterial(texture, 0.8);
     const geometry = new THREE.BoxGeometry(32, 32, 32);
     const plane = new THREE.Mesh(geometry, material);
     plane.position.z = -300;
     scene.add(plane);
     return plane;
-};
-
-const makeCubesWithTexture = (texture) => {
-    const cubes = [];
-    for (let i = 0; i < 10; i++) {
-        let cube;
-        if (i === 0) {
-            cube = makePhysicsCube(texture, false);
-        } else {
-            cube = makePhysicsCube(texture, false);
-        }
-        cube.position.x = 0;
-        cube.position.y = 0;
-        cubes.push(cube);
-    }
-    return cubes;
 };
 
 const makeSpheresWithTexture = (texture) => {
@@ -332,82 +322,72 @@ const dataMap = {
 
 globalEventBus = createNanoEvents();
 
-const animate = (shapes, backdrop, physicsShapes, texture) => {
-    globalEventBus.emit('loop');
-    requestAnimationFrame(() =>
-        animate(shapes, backdrop, physicsShapes, texture)
-    );
-    if (expansionX > 0) {
-        expansionX -= expansionX * 0.05;
-    }
-    if (expansionY > 0) {
-        expansionY -= expansionY * 0.01;
-    }
-    frames++;
-    const magicX = (soundValues[0] / 255) * 10;
-    const magicY = (soundValues[1] / 255) * 10;
+let axis = new THREE.Vector3(0, 1, 0);
+var pointing = new THREE.Vector3(0, 0, 0);
 
-    // console.log(backdrop.position);
+const animate = (backdrop, physicsShapes, texture) => {
+    requestAnimationFrame(() => animate(backdrop, physicsShapes, texture));
+
+    camera.getWorldDirection(pointing);
+
+    camera.position.x = player.position.x;
+    camera.position.y = player.position.y + 10;
+    camera.position.z = player.position.z + 10;
+
+    // Takes radians
+    function moveInDirection(movementScalar) {
+        const lockedPointing = new THREE.Vector3(pointing.x, 0, pointing.z);
+        const force = lockedPointing.clone().multiplyScalar(movementScalar * 1);
+        // pointing.applyAxisAngle(axis, rotationAngle);
+        player.physics.applyImpulse(new THREE.Vector3(), force);
+    }
+
+    // go forward
+    if (keysCurrentlyPressed.w) {
+        moveInDirection(1);
+    }
+    // go backward
+    if (keysCurrentlyPressed.s) {
+        moveInDirection(-1);
+    }
+    // // rotate left
+    if (keysCurrentlyPressed.a) {
+        player.rotation.y += 0.1;
+    }
+    // rotate right
+    if (keysCurrentlyPressed.d) {
+        player.rotation.y -= 0.1;
+    }
+
+    frames++;
+
     if (frames % 60 === 0) {
         physicsShapes.push(
-            makePhysicsPizza(
-                texture,
-                [camera.position.x, camera.position.y - 1, 0],
-                Math.random() * 2 - 1
-            )
+            makePhysicsPizza(texture, [defaultPizzaLoc], 1, 0.2, true, 3)
         );
     }
 
-    expansionX += magicX;
-    expansionY += magicY;
-    pointLight.intensity = expansionX / 2000;
-    // const sizeVector = new THREE.Vector3(expansionX / 255, expansionY / 255, 10);
-    const sizeVector = { x: expansionX / 255, y: expansionY / 255, z: 1 };
-    // console.log(sizeVector);
-    // console.log(shapes[0]);
+    pointLight.intensity = 1 / 2000;
+
     backdrop.rotation.y = (frames / 155) % 180;
     backdrop.rotation.x = (frames / 155) % 180;
-    // backdrop.position.z = -400 / magicX;
-    expansionX = _.clamp(expansionX, 30, 355);
-    expansionY = _.clamp(expansionY, 30, 355);
 
-    shapes.forEach((shape, i) => {
-        // console.log(shape);
-        if (i !== 0) shape.material.opacity = (expansionX * i) / 255;
-        // console.log(soundValues)
-        shape.scale.set(expansionX / 255, expansionX / 255, expansionX / 255);
-        // shape.rotation.x += 0.01;
-        // shape.rotation.y += 0.01;
-        // if(frames % shape.maxFrames === 0){
-        //     shape.position.x = -5 + Math.random() * 10;
-        //     shape.position.y = -5 + Math.random() * 10;
-        // }
-        // shape.position.x = line[(frames + i) % line.length].x + line[i].x;
-        // shape.position.y = line[(frames + i) % line.length].y + line[i].y;
-        // shape.position.z = -i * 0.5 + line[i].x * line[i].y; neat z-view trick
-        shape.position.x =
-            pos.x + Math.sin(frames / 60 + i) * (expansionX / 100);
-        shape.position.y =
-            pos.y + Math.cos(frames / 60 + i) * (expansionY / 100);
-        shape.physics.setPosition(shape.position);
-        // shape.position.z = -i + 6; don't do this
-    });
     physicsShapes.forEach((shape, i) => {
         shape.position.copy(shape.physics.getPosition());
         shape.quaternion.copy(shape.physics.getQuaternion());
     });
-    // camera.position.y = Math.sin(frames / 180);
-    // camera.position.x = Math.cos(frames / 180);
     world.step();
     renderer.render(scene, camera);
 };
+
+let player = undefined;
 
 loader.load(
     '/pizza.png',
     (texture) => {
         world.add({
             type: 'box',
-            size: [100, 0.5, 100],
+            size: [worldSize, 0.5, worldSize],
             pos: [0, -5.2, 0],
             move: false,
             density: 1,
@@ -415,13 +395,9 @@ loader.load(
             belongsTo: 1,
         });
         createGrid();
-        const cubes = makeCubesWithTexture(texture);
-        // const spheres = makeSpheresWithTexture(texture);
         const backdrop = makeBackdropWithTexture(texture);
-        const physicsShapes = () => {
-            return [makePhysicsCube(texture)];
-        };
-        animate(cubes, backdrop, physicsShapes(), texture);
+        player = createPlayer(texture);
+        animate(backdrop, [player], texture);
     },
     undefined,
     function (err) {

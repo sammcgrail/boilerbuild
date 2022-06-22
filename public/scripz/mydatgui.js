@@ -22,34 +22,7 @@ document.onkeydown = (event) => {
 };
 
 // Camera controls
-function cameraLoop() {
-    const axis = new THREE.Vector3(0, 1, 0);
-    const pointing = camera.getWorldDirection(new THREE.Vector3(0, 0, 0));
-    // Takes radians
-    function setDirection(rotationAngle) {
-        pointing.applyAxisAngle(axis, rotationAngle);
-        camera.position.x += pointing.x;
-        camera.position.y += pointing.y;
-        camera.position.z += pointing.z;
-    }
-
-    // go forward
-    if (keysCurrentlyPressed.w) {
-        setDirection(0);
-    }
-    // go backward
-    if (keysCurrentlyPressed.s) {
-        setDirection(Math.PI);
-    }
-    // rotate left
-    if (keysCurrentlyPressed.a) {
-        camera.rotation.y += 0.1;
-    }
-    // rotate right
-    if (keysCurrentlyPressed.d) {
-        camera.rotation.y -= 0.1;
-    }
-}
+function aLoop() {}
 
 let loopCounter = 0;
 globalEventBus.on('loop', () => {
