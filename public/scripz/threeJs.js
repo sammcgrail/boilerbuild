@@ -171,16 +171,38 @@ document.onmousemove = (event) => {
 };
 
 const makePlayer = (texture) => {
-    const playerCube = makePhysicsCube({
+    const topBox = makePhysicsCube({
         texture,
-        position: [0, 1, 0],
-        sideSize: 2,
+        position: [0, 4, 0],
+        sideSize: 1,
         bounciness: 0.2,
         density: 1,
         friction: 0.02,
         isDynamic: true,
+        name: 'playerTop',
     });
-    return playerCube;
+    const bottomBox = makePhysicsCube({
+        texture,
+        position: [0, 1, 0],
+        sideSize: 2,
+        bounciness: 0.2,
+        density: 10,
+        friction: 0.02,
+        isDynamic: true,
+        name: 'playerBot',
+    });
+    world.add({
+        type: 'jointHinge',
+        body1: 'playerTop',
+        body2: 'playerBot',
+        min: 2,
+        max: 2,
+        pos1: [0, -0.5, 0],
+        pos2: [0, 1, 0],
+        axe1: [0, 1, 0],
+        axe2: [0, 1, 0],
+    });
+    return [topBox, bottomBox];
 };
 
 const makeGrid = () => {
@@ -236,6 +258,7 @@ const makePhysicsCube = ({
     density,
     friction,
     isDynamic,
+    name,
 }) => {
     const cube = makeACube(texture, sideSize);
     const physicsGeometry = world.add({
@@ -247,6 +270,7 @@ const makePhysicsCube = ({
         friction: friction,
         belongsTo: 1,
         restitution: bounciness,
+        name: name,
     });
     cube.physics = physicsGeometry;
     return cube;
@@ -348,11 +372,9 @@ const animate = (backdrop, physicsShapes, texture) => {
     // Takes radians
     function moveInDirection(movementScalar) {
         const lockedPointing = new THREE.Vector3(pointing.x, 0, pointing.z);
-        const force = lockedPointing
-            .clone()
-            .multiplyScalar(movementScalar * 0.5);
+        const force = lockedPointing.clone().multiplyScalar(movementScalar);
         // pointing.applyAxisAngle(axis, rotationAngle);
-        player.physics.applyImpulse(new THREE.Vector3(), force);
+        player.physics.applyImpulse(new OIMO.Vec3(0, -1, 0), force);
     }
 
     function rotatePlayer(rotationDirection) {}
@@ -411,8 +433,9 @@ loader.load(
         });
         makeGrid();
         const backdrop = makeBackdropWithTexture(texture);
-        player = makePlayer(texture);
-        animate(backdrop, [player], texture);
+        const players = makePlayer(texture);
+        player = players[1];
+        animate(backdrop, [...players], texture);
     },
     undefined,
     function (err) {
