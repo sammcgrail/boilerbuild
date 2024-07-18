@@ -1,6 +1,15 @@
 const visualMainElement = document.querySelector('main');
 const visualValueCount = 16;
 let visualElements;
+const emojiPaths = [
+    '/laugh.png',
+    '/cool.png',
+    '/pro.png',
+    '/angery.png',
+    '/gotheat.png',
+];
+let emojis = [];
+let lamberts = [];
 
 const makeOpaqueMaterial = (texture) => {
     return new THREE.MeshLambertMaterial({
@@ -131,8 +140,8 @@ renderer.setSize(window.innerWidth, window.innerHeight);
 
 const material = new THREE.MeshLambertMaterial({ color: 0xffffff });
 const hemiLight = new THREE.HemisphereLight(
-    new THREE.Color('orange').getHex(),
-    new THREE.Color('blue').getHex(),
+    new THREE.Color('white').getHex(),
+    new THREE.Color('white').getHex(),
     0.9
 );
 const pointLight = new THREE.PointLight(0xffffff, 4, 100);
@@ -144,7 +153,13 @@ scene.add(pointLight);
 const up = 38;
 const down = 40;
 
-const keysCurrentlyPressed = {};
+const keysCurrentlyPressed = {
+    w: false,
+    a: false,
+    s: false,
+    d: false,
+    space: false,
+};
 
 document.onkeydown = (event) => {
     keysCurrentlyPressed[event.key] = true;
@@ -205,7 +220,8 @@ const makePlayer = (texture) => {
     return [topBox, bottomBox];
 };
 
-const makeGrid = () => {
+const makegroup = () => {
+    const group = new THREE.Group();
     const material = makeColorMaterial('blue');
     for (let i = 0; i < worldSize; ++i) {
         const pointsX = [];
@@ -220,9 +236,25 @@ const makeGrid = () => {
 
         const lineX = new THREE.Line(geometryX, material);
         const lineY = new THREE.Line(geometryY, material);
-        scene.add(lineX);
-        scene.add(lineY);
+        group.add(lineX);
+        group.add(lineY);
     }
+    return group;
+};
+
+const makeGrid = () => {
+    scene.add(makegroup());
+    const wall1 = makegroup();
+    wall1.rotation.z = Math.PI / 2;
+    wall1.position.x = 15.2;
+    wall1.position.y = worldSize / 2;
+    scene.add(wall1);
+
+    const wall2 = makegroup();
+    wall2.rotation.z = Math.PI / 2;
+    wall2.position.x = -15.2;
+    wall2.position.y = worldSize / 2;
+    scene.add(wall2);
 };
 
 const makeASphere = (texture) => {
@@ -370,38 +402,59 @@ const animate = (backdrop, physicsShapes, texture) => {
     camera.position.z = player.position.z + 10;
 
     // Takes radians
-    function moveInDirection(movementScalar) {
-        const lockedPointing = new THREE.Vector3(pointing.x, 0, pointing.z);
-        const force = lockedPointing.clone().multiplyScalar(movementScalar);
-        // pointing.applyAxisAngle(axis, rotationAngle);
-        player.physics.applyImpulse(new OIMO.Vec3(0, -1, 0), force);
+    function moveInDirection(movementVector) {
+        player.physics.applyImpulse(
+            new OIMO.Vec3(0, 0, 0),
+            movementVector.multiplyScalar(8)
+        );
     }
 
     function rotatePlayer(rotationDirection) {}
 
+    //jump
+    if (keysCurrentlyPressed[' ']) {
+        if (player.physics.position.y < 0) {
+            const force = new OIMO.Vec3(0, 1, 0);
+            player.physics.applyImpulse(
+                new OIMO.Vec3(0, 0, 0),
+                force.multiplyScalar(100)
+            );
+        }
+    }
+
     // go forward
     if (keysCurrentlyPressed.w) {
-        moveInDirection(1);
+        moveInDirection(new OIMO.Vec3(0, 0, -1));
     }
     // go backward
     if (keysCurrentlyPressed.s) {
-        moveInDirection(-1);
+        moveInDirection(new OIMO.Vec3(0, 0, 1));
     }
     // // rotate left
     if (keysCurrentlyPressed.a) {
-        player.rotation.y += 0.1;
+        moveInDirection(new OIMO.Vec3(-1, 0, 0));
     }
     // rotate right
     if (keysCurrentlyPressed.d) {
-        player.rotation.y -= 0.1;
+        moveInDirection(new OIMO.Vec3(1, 0, 0));
     }
 
     frames++;
 
     if (frames % 60 === 0) {
-        physicsShapes.push(
-            makePhysicsPizza(texture, [defaultPizzaLoc], 1, 0.2, true, 3)
-        );
+        const num = Math.floor(Math.random()*(emojis.length-1));
+        for(let i = 0; i < 10; i++) {
+            physicsShapes.push(
+                makePhysicsPizza(emojis[(num+i)%(emojis.length-1)], [0, 5, -i*3], 1, 0.2, true, 3)
+            )
+        }
+        // physicsShapes.push(
+        //     makePhysicsPizza(emojis[num], [defaultPizzaLoc], 1, 0.2, true, 3)
+        // );
+        // physicsShapes.push(
+        //     makePhysicsPizza(emojis[num], [10, 10, -10], 1, 0.2, true, 3)
+        // );
+        backdrop.material = lamberts[num];
     }
 
     pointLight.intensity = 1 / 2000;
@@ -419,26 +472,63 @@ const animate = (backdrop, physicsShapes, texture) => {
 
 let player = undefined;
 
-loader.load(
-    '/pizza.png',
-    (texture) => {
-        world.add({
-            type: 'box',
-            size: [worldSize, 0.5, worldSize],
-            pos: [0, -5.2, 0],
-            move: false,
-            density: 1,
-            friction: 3,
-            belongsTo: 1,
-        });
-        makeGrid();
-        const backdrop = makeBackdropWithTexture(texture);
-        const players = makePlayer(texture);
-        player = players[1];
-        animate(backdrop, [...players], texture);
-    },
-    undefined,
-    function (err) {
-        console.error('haha fuck y');
-    }
-);
+Promise.all(
+    emojiPaths.map(async (path) => {
+        return await loader.loadAsync(path);
+    })
+).then((e) => {
+    emojis = e;
+    lamberts = e.map((texture) => {
+        return makeLambertMaterial(texture, 0.8)
+    });
+    world.add({
+        type: 'box',
+        size: [worldSize, 0.5, worldSize],
+        pos: [0, -5.2, 0],
+        move: false,
+        density: 1,
+        friction: 3,
+        belongsTo: 1,
+    });
+    world.add({
+        type: 'box',
+        size: [1, worldSize, worldSize],
+        pos: [15.2, 0, 0],
+        move: false,
+        density: 1,
+        friction: 3,
+        belongsTo: 1,
+    });
+    world.add({
+        type: 'box',
+        size: [1, worldSize, worldSize],
+        pos: [-15.2, 0, 0],
+        move: false,
+        density: 1,
+        friction: 3,
+        belongsTo: 1,
+    });
+    world.add({
+        type: 'box',
+        size: [worldSize, worldSize, 1],
+        pos: [0, 0, 15.2],
+        move: false,
+        density: 1,
+        friction: 3,
+        belongsTo: 1,
+    });
+    world.add({
+        type: 'box',
+        size: [worldSize, worldSize, 1],
+        pos: [0, 0, -15.2],
+        move: false,
+        density: 1,
+        friction: 3,
+        belongsTo: 1,
+    });
+    makeGrid();
+    const backdrop = makeBackdropWithTexture(emojis[2]);
+    const players = makePlayer(emojis[2]);
+    player = players[1];
+    animate(backdrop, [...players], emojis[3]);
+});
