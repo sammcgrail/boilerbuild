@@ -32,25 +32,6 @@ const makeLambertMaterial = (texture, opacity) => {
     });
 };
 
-// notes
-// Visuals of pizza cube at first are possibly aesthetically displeasing, possibly change to dark brown? get some char
-// consider varying pizza velocity
-
-// - top management
-// 06/21 not addressed
-
-// texture
-
-// or game
-
-// TODO
-// bulldozer object to sweep the pizz
-// gimbled camera behind bulldyd
-// push them za
-
-// size of "collector" changes on amount of suck
-// socket?
-
 const createDOMElements = () => {
     let i;
     for (i = 0; i < visualValueCount; ++i) {
@@ -532,3 +513,38 @@ Promise.all(
     player = players[1];
     animate(backdrop, [...players], emojis[3]);
 });
+
+// Add touch events so that touching the screen does the same thing as going forward
+document.addEventListener('touchstart', onTouchStart, false);
+document.addEventListener('touchmove', onTouchMove, false);
+document.addEventListener('touchend', onTouchEnd, false);
+
+let touchStartX = 0;
+let touchStartY = 0;
+
+function onTouchStart(event) {
+    if (event.touches.length === 1) { // Only deal with one finger
+        const touch = event.touches[0];
+        touchStartX = touch.clientX;
+        touchStartY = touch.clientY;
+        keysCurrentlyPressed['w'] = true; // Start moving forward on touch
+    }
+}
+
+function onTouchMove(event) {
+    if (event.touches.length === 1) { // Only deal with one finger
+        const touch = event.touches[0];
+        const touchMoveX = touch.clientX;
+        const touchMoveY = touch.clientY;
+
+        const deltaX = touchMoveX - touchStartX;
+        const deltaY = touchMoveY - touchStartY;
+
+        // You can add more conditions here to handle touch move
+        // For example, checking for swipes to the left or right, etc.
+    }
+}
+
+function onTouchEnd(event) {
+    keysCurrentlyPressed['w'] = false; // Stop moving forward when touch ends
+}
