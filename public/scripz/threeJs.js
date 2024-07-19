@@ -442,10 +442,10 @@ const animate = (backdrop, physicsShapes, texture) => {
     frames++;
 
     if (frames % 60 === 0) {
-        const num = Math.floor(Math.random()*(emojis.length-1));
+        const num = Math.floor(Math.random()*(emojis.length));
         for(let i = 0; i < 10; i++) {
             physicsShapes.push(
-                makePhysicsPizza(emojis[(num+i)%(emojis.length-1)], [0, 5, -i*3], 1, 0.2, true, 3)
+                makePhysicsPizza(emojis[(num+i)%(emojis.length)], [0, 5, -i*3], 1, 0.2, true, 3)
             )
         }
         // physicsShapes.push(
